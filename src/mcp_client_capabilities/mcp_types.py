@@ -6,20 +6,20 @@ from typing import TypedDict
 
 
 class Resources(TypedDict, total=False):
-    list_changed: bool | None
+    listChanged: bool | None
     subscribe: bool | None
 
 
 class Prompts(TypedDict, total=False):
-    list_changed: bool | None
+    listChanged: bool | None
 
 
 class Tools(TypedDict, total=False):
-    list_changed: bool | None
+    listChanged: bool | None
 
 
 class Roots(TypedDict, total=False):
-    list_changed: bool | None
+    listChanged: bool | None
 
 
 class Completions(TypedDict, total=False):
@@ -42,19 +42,27 @@ class Sampling(TypedDict, total=False):
     pass
 
 
-class McpClientRecord(TypedDict):
+class Tasks(TypedDict, total=False):
+    pass
+
+
+class _McpClientRecordRequired(TypedDict):
     title: str
     url: str
-    protocol_version: str
-    resources: Resources | None
-    prompts: Prompts | None
-    tools: Tools | None
-    elicitation: Elicitation | None
-    sampling: Sampling | None
-    roots: Roots | None
-    completions: Completions | None
-    logging: Logging | None
-    experimental: Experimental | None
+    protocolVersion: str
+
+
+class McpClientRecord(_McpClientRecordRequired, total=False):
+    resources: Resources
+    prompts: Prompts
+    tools: Tools
+    elicitation: Elicitation
+    sampling: Sampling
+    roots: Roots
+    completions: Completions
+    logging: Logging
+    experimental: Experimental
+    tasks: Tasks
 
 
 ClientsIndex = dict[str, McpClientRecord]

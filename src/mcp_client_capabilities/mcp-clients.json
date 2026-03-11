@@ -322,21 +322,19 @@
     "url": "https://code.visualstudio.com"
   },
   "Windsurf": {
-    "protocolVersion": "2025-03-26",
+    "protocolVersion": "2025-11-25",
     "title": "Windsurf Editor",
-    "tools": {
-      "listChanged": true
-    },
+    "tools": {},
+    "resources": {},
+    "prompts": {},
     "url": "https://codeium.com/windsurf"
   },
   "windsurf-client": {
-    "prompts": {},
-    "protocolVersion": "2025-03-26",
-    "resources": {},
+    "protocolVersion": "2025-11-25",
     "title": "Windsurf Editor",
-    "tools": {
-      "listChanged": true
-    },
+    "tools": {},
+    "resources": {},
+    "prompts": {},
     "url": "https://codeium.com/windsurf"
   },
   "Xcode-copilot-xcode": {

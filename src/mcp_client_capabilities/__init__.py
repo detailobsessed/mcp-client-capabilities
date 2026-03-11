@@ -15,6 +15,6 @@ with _json_path.open(encoding="utf-8") as f:
     _clients_data = json.load(f)
 
 # All MCP client capabilities indexed by client name
-mcp_clients: ClientsIndex = _clients_data  # type: ignore[assignment]
+mcp_clients: ClientsIndex = _clients_data
 
 __all__ = ["ClientsIndex", "McpClientRecord", "mcp_clients"]
