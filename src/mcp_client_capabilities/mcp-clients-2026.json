@@ -192,5 +192,65 @@
       "status": "first_probe",
       "message": "No previous probe for this client"
     }
+  },
+  "Zed": {
+    "capturedAt": "2026-03-11T16:49:27.525977+00:00",
+    "clientInfo": {
+      "name": "Zed",
+      "version": "0.1.0"
+    },
+    "protocolVersion": "2025-03-26",
+    "capabilities": {
+      "tools": {
+        "supported": true,
+        "evidence": "client called tools/list; listChanged: sent notification, client re-listed within 5s",
+        "listChanged": true
+      },
+      "resources": {
+        "supported": false,
+        "evidence": "server advertised resources, client never interacted"
+      },
+      "prompts": {
+        "supported": true,
+        "evidence": "client called prompts/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "roots": {
+        "supported": false,
+        "evidence": "list_roots request failed: TimeoutError"
+      },
+      "sampling": {
+        "supported": false,
+        "evidence": "sampling request failed: ValueError"
+      },
+      "elicitation": {
+        "supported": false,
+        "evidence": "elicitation request failed: TimeoutError"
+      },
+      "completions": {
+        "supported": null,
+        "evidence": "not tested"
+      },
+      "logging": {
+        "supported": null,
+        "evidence": "not tested"
+      }
+    },
+    "clientRecord": {
+      "protocolVersion": "2025-03-26",
+      "title": "Zed",
+      "url": "",
+      "tools": {
+        "listChanged": true
+      },
+      "prompts": {}
+    },
+    "comparisonVsDatabase": {
+      "status": "match"
+    },
+    "comparisonVsPreviousProbe": {
+      "status": "first_probe",
+      "message": "No previous probe for this client"
+    }
   }
 }

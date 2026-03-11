@@ -161,6 +161,7 @@ The following table is generated from probe-verified data in
 | claude-ai | 2025-11-25 | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | 2026-03-11 |
 | dev.warp.Warp-Preview | 2025-03-26 | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | 2026-03-11 |
 | Windsurf | 2025-11-25 | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | 2026-03-11 |
+| Zed | 2025-03-26 | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | 2026-03-11 |
 <!-- MCP_PROBED_TABLE_END -->
 
 ## Usage
