@@ -266,7 +266,7 @@ def _wrap_page(table_html: str, client_count: int) -> str:
       <span class="pill" data-col="7" onclick="togglePill(this)">Sampling</span>
       <span class="pill" data-col="8" onclick="togglePill(this)">Roots</span>
       <span class="pill" data-col="9" onclick="togglePill(this)">Elicitation</span>
-      <span id="count" style="font-size:0.85rem;color:#6b7280;margin-left:0.25rem"></span>
+      <span id="count" style="font-size:0.85rem;color:#6b7280;margin-left:0.25rem">{client_count} clients</span>
     </div>
     {table_html}
   </div>

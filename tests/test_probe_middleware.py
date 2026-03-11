@@ -758,6 +758,18 @@ class TestNullMerge:
         entry = read_client_entry(tmp_output, "X")
         assert entry["capabilities"]["roots"]["supported"] is True
 
+    def test_null_merge_updates_client_record(self, tmp_output: Path) -> None:
+        """Regression: clientRecord must reflect null-merged capabilities."""
+        self._seed_previous(tmp_output, {"roots": {"supported": True, "evidence": "deep probe"}})
+        mw = _CapabilityCaptureMW(tmp_output)
+        mw._client_info = {"name": "X"}
+        # roots stays untested (null) in current probe → merge preserves True
+        mw._flush()
+        entry = read_client_entry(tmp_output, "X")
+        assert entry["capabilities"]["roots"]["supported"] is True
+        # clientRecord must also include roots (since it's supported after merge)
+        assert "roots" in entry["clientRecord"]
+
     def test_merge_preserves_multiple_caps(self, tmp_output: Path) -> None:
         self._seed_previous(
             tmp_output,

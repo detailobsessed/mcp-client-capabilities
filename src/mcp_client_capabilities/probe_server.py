@@ -285,6 +285,24 @@ class _CapabilityCaptureMW(Middleware):
                     if detail.get("supported") is None and cap in prev_caps and prev_caps[cap].get("supported") is not None:
                         result["capabilities"][cap] = prev_caps[cap]
 
+            # Rebuild clientRecord from (possibly merged) capabilities
+            merged_record: dict[str, Any] = {
+                "protocolVersion": result.get("protocolVersion", ""),
+                "title": result.get("clientInfo", {}).get("name", "Unknown"),
+                "url": result.get("clientRecord", {}).get("url", ""),
+            }
+            for cap_key in self._ALL_CAPS:
+                cap_detail = result["capabilities"].get(cap_key, {})
+                if cap_detail.get("supported") is not True:
+                    continue
+                val: dict[str, Any] = {}
+                if cap_detail.get("listChanged") is True:
+                    val["listChanged"] = True
+                merged_record[cap_key] = val
+            if "experimental" in self._declared:
+                merged_record["experimental"] = self._declared["experimental"]
+            result["clientRecord"] = merged_record
+
             result["comparisonVsDatabase"] = self._compare_vs_database(client_key)
             result["comparisonVsPreviousProbe"] = self._compare_vs_previous()
 

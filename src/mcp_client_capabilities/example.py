@@ -21,7 +21,7 @@ print()
 claude_desktop = mcp_clients.get("claude-desktop")
 if claude_desktop:
     prompts = claude_desktop.get("prompts")
-    if prompts and prompts.get("list_changed"):
+    if prompts and prompts.get("listChanged"):
         print("✓ Claude Desktop supports prompts list change notifications")
     else:
         print("✗ Claude Desktop does not support prompts list change notifications")
@@ -33,7 +33,7 @@ if claude_desktop:
         print("✗ Claude Desktop does not support resource subscriptions")
 
     tools = claude_desktop.get("tools")
-    if tools and tools.get("list_changed"):
+    if tools and tools.get("listChanged"):
         print("✓ Claude Desktop supports tools list change notifications")
     else:
         print("✗ Claude Desktop does not support tools list change notifications")
