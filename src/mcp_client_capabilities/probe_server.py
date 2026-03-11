@@ -41,6 +41,7 @@ import mcp.types as mt
 from fastmcp import FastMCP
 from fastmcp.server.context import Context  # noqa: TC002 — runtime use by fastmcp
 from fastmcp.server.middleware import Middleware, MiddlewareContext
+from fastmcp.server.middleware.error_handling import ErrorHandlingMiddleware
 from fastmcp.server.middleware.logging import LoggingMiddleware
 
 _DEFAULT_DB = str(Path.home() / "mcp-probes" / "mcp-clients-2026.json")
@@ -317,10 +318,12 @@ class _CapabilityCaptureMW(Middleware):
 
             db[client_key] = result
 
-            self._db_path.write_text(
+            tmp = self._db_path.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(db, indent=2, default=str) + "\n",
                 encoding="utf-8",
             )
+            tmp.replace(self._db_path)
         except OSError as exc:
             _log(f"Failed to write DB: {exc}")
 
@@ -424,8 +427,11 @@ async def _run_deep_probe(
     mw: _CapabilityCaptureMW,
 ) -> dict[str, Any]:
     """Execute Tier 2 + 3 probing and return the full result."""
+    _total = 4  # notification, roots, sampling, elicitation
+
     # ── Tier 2: listChanged notifications ──────────────────────────
 
+    await ctx.info("Sending listChanged notifications…")
     before = dict(mw._list_counts)
 
     notifications = [
@@ -445,31 +451,47 @@ async def _run_deep_probe(
             mw._list_changed[key] = changed
             verb = "re-listed" if changed else "did not re-list"
             mw._list_changed_evidence[key] = f"listChanged: sent notification, client {verb} within {_NOTIFICATION_WAIT_SECONDS:.0f}s"
-            _log(f"listChanged({key}): {changed}")
+            await ctx.info(f"listChanged({key}): {changed}")
+
+    with contextlib.suppress(Exception):
+        await ctx.report_progress(1, _total, "listChanged notifications complete")
 
     # ── Tier 3: server→client requests ─────────────────────────────
 
     await _probe_roots(ctx, mw)
+    with contextlib.suppress(Exception):
+        await ctx.report_progress(2, _total, "roots probe complete")
+
     await _probe_sampling(ctx, mw)
+    with contextlib.suppress(Exception):
+        await ctx.report_progress(3, _total, "sampling probe complete")
+
     await _probe_elicitation(ctx, mw)
+    with contextlib.suppress(Exception):
+        await ctx.report_progress(4, _total, "elicitation probe complete")
 
     mw._flush()
-    return mw._build_result()
+    return _read_client_entry(mw._db_path, mw) or mw._build_result()
 
 
-async def _probe_roots(ctx: Context, mw: _CapabilityCaptureMW) -> None:
+async def _probe_roots(
+    ctx: Context,
+    mw: _CapabilityCaptureMW,
+) -> None:
     try:
-        roots = await asyncio.wait_for(
+        result = await asyncio.wait_for(
             ctx.list_roots(),
             timeout=_ACTIVE_PROBE_TIMEOUT,
         )
         mw._active["roots"] = True
-        mw._active_evidence["roots"] = f"list_roots returned {len(roots)} root(s)"
-        _log(f"roots: supported ({len(roots)} root(s))")
+        mw._active_evidence["roots"] = f"list_roots returned {len(result)} root(s)"
+        with contextlib.suppress(Exception):
+            await ctx.info(f"roots: supported ({len(result)} root(s))")
     except Exception as exc:
         mw._active["roots"] = False
-        mw._active_evidence["roots"] = f"list_roots request failed: {type(exc).__name__}"
-        _log(f"roots: not supported ({type(exc).__name__})")
+        mw._active_evidence["roots"] = f"list_roots failed: {type(exc).__name__}"
+        with contextlib.suppress(Exception):
+            await ctx.warning(f"roots: not supported ({type(exc).__name__})")
 
 
 async def _probe_sampling(ctx: Context, mw: _CapabilityCaptureMW) -> None:
@@ -482,12 +504,14 @@ async def _probe_sampling(ctx: Context, mw: _CapabilityCaptureMW) -> None:
             timeout=_ACTIVE_PROBE_TIMEOUT,
         )
         mw._active["sampling"] = True
-        mw._active_evidence["sampling"] = f"sampling request returned: {(result.text or '')[:30]!r}"
-        _log(f"sampling: supported (got {(result.text or '')[:30]!r})")
+        mw._active_evidence["sampling"] = f"sampling returned text: {result.text!r}"
+        with contextlib.suppress(Exception):
+            await ctx.info(f"sampling: supported (text: {result.text!r})")
     except Exception as exc:
         mw._active["sampling"] = False
-        mw._active_evidence["sampling"] = f"sampling request failed: {type(exc).__name__}"
-        _log(f"sampling: not supported ({type(exc).__name__})")
+        mw._active_evidence["sampling"] = f"sampling failed: {type(exc).__name__}"
+        with contextlib.suppress(Exception):
+            await ctx.warning(f"sampling: not supported ({type(exc).__name__})")
 
 
 async def _probe_elicitation(
@@ -504,11 +528,13 @@ async def _probe_elicitation(
         )
         mw._active["elicitation"] = True
         mw._active_evidence["elicitation"] = f"elicitation request returned: action={result.action}"
-        _log(f"elicitation: supported (action: {result.action})")
+        with contextlib.suppress(Exception):
+            await ctx.info(f"elicitation: supported (action: {result.action})")
     except Exception as exc:
         mw._active["elicitation"] = False
         mw._active_evidence["elicitation"] = f"elicitation request failed: {type(exc).__name__}"
-        _log(f"elicitation: not supported ({type(exc).__name__})")
+        with contextlib.suppress(Exception):
+            await ctx.warning(f"elicitation: not supported ({type(exc).__name__})")
 
 
 # ---------------------------------------------------------------------------
@@ -542,6 +568,7 @@ def _build_server(db_path: Path) -> FastMCP:
     logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 
     mw = _CapabilityCaptureMW(db_path)
+    server.add_middleware(ErrorHandlingMiddleware())
     server.add_middleware(mw)
     server.add_middleware(LoggingMiddleware(log_level=logging.DEBUG))
 

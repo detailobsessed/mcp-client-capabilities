@@ -156,9 +156,9 @@ def _build_table(df: pl.DataFrame) -> GT:
         )
         .tab_source_note(
             md(
-                "Data: [mcp-clients.json](https://github.com/nicobailon/mcp-client-capabilities/blob/main/src/mcp_client_capabilities/mcp-clients.json)"
-                " + [mcp-clients-2026.json](https://github.com/nicobailon/mcp-client-capabilities/blob/main/src/mcp_client_capabilities/mcp-clients-2026.json)"
-                " · [GitHub](https://github.com/nicobailon/mcp-client-capabilities)"
+                "Data: [mcp-clients.json](https://github.com/apify/mcp-client-capabilities/blob/main/src/mcp_client_capabilities/mcp-clients.json)"
+                " + [mcp-clients-2026.json](https://github.com/apify/mcp-client-capabilities/blob/main/src/mcp_client_capabilities/mcp-clients-2026.json)"
+                " · [GitHub](https://github.com/apify/mcp-client-capabilities)"
             )
         )
         .cols_label(
