@@ -715,12 +715,15 @@ wheels = [
 name = "mcp-client-capabilities"
 version = "0.0.14"
 source = { editable = "." }
-dependencies = [
+
+[package.optional-dependencies]
+probe = [
     { name = "fastmcp" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "mcp-client-capabilities", extra = ["probe"] },
     { name = "poethepoet" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -733,10 +736,12 @@ site = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "fastmcp", specifier = ">=3.1.0" }]
+requires-dist = [{ name = "fastmcp", marker = "extra == 'probe'", specifier = ">=3.1.0" }]
+provides-extras = ["probe"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "mcp-client-capabilities", extras = ["probe"] },
     { name = "poethepoet", specifier = ">=0.42.1" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },

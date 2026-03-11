@@ -298,7 +298,7 @@ class _CapabilityCaptureMW(Middleware):
                 json.dumps(db, indent=2, default=str) + "\n",
                 encoding="utf-8",
             )
-        except OSError as exc:
+        except (OSError, json.JSONDecodeError) as exc:
             _log(f"Failed to write DB: {exc}")
 
     def _observe(self, capability: str, method: str, label: str) -> None:

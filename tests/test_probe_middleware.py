@@ -442,6 +442,15 @@ class TestFlush:
         mw = _CapabilityCaptureMW(Path("/nonexistent/dir/out.json"))
         mw._flush()  # should not raise
 
+    def test_flush_survives_corrupted_json(self, tmp_output: Path) -> None:
+        """Regression: _flush must catch json.JSONDecodeError on corrupted DB."""
+        tmp_output.parent.mkdir(parents=True, exist_ok=True)
+        tmp_output.write_text("{invalid json", encoding="utf-8")
+        mw = _CapabilityCaptureMW(tmp_output)
+        mw._flush()  # should not raise
+        # File should still contain the corrupted content (write was skipped)
+        assert tmp_output.exists()
+
 
 # ---------------------------------------------------------------------------
 # Integration: realistic scenario

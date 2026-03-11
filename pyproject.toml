@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12"
 authors = [{name = "Apify"}]
 license = "Apache-2.0"
-dependencies = [
+dependencies = []
+
+[project.optional-dependencies]
+probe = [
     "fastmcp>=3.1.0",
 ]
 
@@ -17,9 +20,13 @@ build-backend = "uv_build"
 [project.scripts]
 mcp-probe = "mcp_client_capabilities.probe_server:main"
 
+[project.entry-points.mcp]
+mcp-capability-probe = "mcp_client_capabilities.probe_server:server"
+
 
 [dependency-groups]
 dev = [
+    "mcp-client-capabilities[probe]",
     "poethepoet>=0.42.1",
     "pytest>=8.0.0",
     "pytest-cov>=7.0.0",

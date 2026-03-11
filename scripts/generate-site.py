@@ -11,6 +11,7 @@ Usage:
 
 from __future__ import annotations
 
+import html
 import json
 from pathlib import Path
 
@@ -98,7 +99,7 @@ def _build_dataframe(baseline: dict, probed: dict) -> pl.DataFrame:
         url = bl.get("url", "")
 
         row: dict = {
-            "client": f'<a href="{url}" target="_blank">{title}</a>' if url else title,
+            "client": f'<a href="{html.escape(url, quote=True)}" target="_blank">{html.escape(title)}</a>' if url else html.escape(title),
             "protocol": bl.get("protocolVersion", ""),
             "verified": _VERIFIED_ICON if is_probed else "",
             "last_checked": _format_timestamp(probe.get("capturedAt", "")) if probe else "",
@@ -112,7 +113,8 @@ def _build_dataframe(baseline: dict, probed: dict) -> pl.DataFrame:
                 lc = pcap.get("listChanged") if cap in _LC_CAPS else None
                 # Use probe value when available, fall back to baseline
                 supported = pval if pval is not None else bl_has
-                row[cap] = _icon(supported, probed=True, lc=lc)
+                actually_probed = pval is not None
+                row[cap] = _icon(supported, probed=actually_probed, lc=lc)
             else:
                 row[cap] = _icon(bl_has, probed=False)
 
@@ -130,7 +132,7 @@ def _build_dataframe(baseline: dict, probed: dict) -> pl.DataFrame:
         seen_keys.add(key)
         url = override.get("url") or probe.get("clientRecord", {}).get("url", "")
         row = {
-            "client": f'<a href="{url}" target="_blank">{title}</a>' if url else title,
+            "client": f'<a href="{html.escape(url, quote=True)}" target="_blank">{html.escape(title)}</a>' if url else html.escape(title),
             "protocol": probe.get("protocolVersion", ""),
             "verified": _VERIFIED_ICON,
             "last_checked": _format_timestamp(probe.get("capturedAt", "")),
