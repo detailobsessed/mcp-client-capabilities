@@ -10,7 +10,7 @@ print("=== MCP Client Capabilities ===\n")
 
 # Access Claude Desktop capabilities directly
 print("Claude Desktop capabilities:")
-print(json.dumps(mcp_clients["claude-desktop"], indent=2))
+print(json.dumps(mcp_clients["claude-ai"], indent=2))
 print()
 
 # List all available clients
@@ -18,7 +18,7 @@ print("Available clients:", list(mcp_clients.keys()))
 print()
 
 # Check specific capabilities
-claude_desktop = mcp_clients.get("claude-desktop")
+claude_desktop = mcp_clients.get("claude-ai")
 if claude_desktop:
     prompts = claude_desktop.get("prompts")
     if prompts and prompts.get("listChanged"):
