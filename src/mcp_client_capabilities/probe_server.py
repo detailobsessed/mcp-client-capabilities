@@ -193,7 +193,7 @@ class _CapabilityCaptureMW(Middleware):
 
     _COMPARABLE_CAPS = ("tools", "resources", "prompts", "roots", "sampling", "elicitation")
 
-    def _compare_vs_database(self, client_key: str) -> dict[str, Any]:
+    def _compare_vs_database(self, client_key: str, client_record: dict[str, Any] | None = None) -> dict[str, Any]:
         """Compare probe results against the existing ``mcp-clients.json``."""
         try:
             known_clients = json.loads(
@@ -210,7 +210,8 @@ class _CapabilityCaptureMW(Middleware):
             }
 
         discrepancies: list[dict[str, str]] = []
-        client_record = self._build_client_record()
+        if client_record is None:
+            client_record = self._build_client_record()
         for cap in self._COMPARABLE_CAPS:
             in_db = cap in known
             in_probe = cap in client_record
@@ -236,14 +237,14 @@ class _CapabilityCaptureMW(Middleware):
             return {"status": "has_discrepancies", "discrepancies": discrepancies}
         return {"status": "match"}
 
-    def _compare_vs_previous(self) -> dict[str, Any]:
+    def _compare_vs_previous(self, client_record: dict[str, Any] | None = None) -> dict[str, Any]:
         """Compare current probe against the previous probe in the DB."""
         if not self._previous_probe:
             return {"status": "first_probe", "message": "No previous probe for this client"}
 
         changes: list[dict[str, str]] = []
         prev_record = self._previous_probe.get("clientRecord", {})
-        curr_record = self._build_client_record()
+        curr_record = client_record if client_record is not None else self._build_client_record()
         for cap in self._COMPARABLE_CAPS:
             in_prev = cap in prev_record
             in_curr = cap in curr_record
@@ -267,7 +268,11 @@ class _CapabilityCaptureMW(Middleware):
 
             db: dict[str, Any] = {}
             if self._db_path.exists():
-                db = json.loads(self._db_path.read_text(encoding="utf-8"))
+                try:
+                    db = json.loads(self._db_path.read_text(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    _log("Corrupted DB file, starting fresh")
+                    db = {}
 
             client_key = self._client_info.get("name", "unknown")
 
@@ -303,8 +308,8 @@ class _CapabilityCaptureMW(Middleware):
                 merged_record["experimental"] = self._declared["experimental"]
             result["clientRecord"] = merged_record
 
-            result["comparisonVsDatabase"] = self._compare_vs_database(client_key)
-            result["comparisonVsPreviousProbe"] = self._compare_vs_previous()
+            result["comparisonVsDatabase"] = self._compare_vs_database(client_key, merged_record)
+            result["comparisonVsPreviousProbe"] = self._compare_vs_previous(merged_record)
 
             # Clean up "unknown" entry once we know the real name
             if client_key != "unknown" and "unknown" in db:
@@ -316,7 +321,7 @@ class _CapabilityCaptureMW(Middleware):
                 json.dumps(db, indent=2, default=str) + "\n",
                 encoding="utf-8",
             )
-        except (OSError, json.JSONDecodeError) as exc:
+        except OSError as exc:
             _log(f"Failed to write DB: {exc}")
 
     def _observe(self, capability: str, method: str, label: str) -> None:

@@ -442,14 +442,16 @@ class TestFlush:
         mw = _CapabilityCaptureMW(Path("/nonexistent/dir/out.json"))
         mw._flush()  # should not raise
 
-    def test_flush_survives_corrupted_json(self, tmp_output: Path) -> None:
-        """Regression: _flush must catch json.JSONDecodeError on corrupted DB."""
+    def test_flush_recovers_from_corrupted_json(self, tmp_output: Path) -> None:
+        """Regression: _flush must recover from corrupted DB by starting fresh."""
         tmp_output.parent.mkdir(parents=True, exist_ok=True)
         tmp_output.write_text("{invalid json", encoding="utf-8")
         mw = _CapabilityCaptureMW(tmp_output)
         mw._flush()  # should not raise
-        # File should still contain the corrupted content (write was skipped)
-        assert tmp_output.exists()
+        # File should now contain valid JSON with the new entry
+        data = json.loads(tmp_output.read_text(encoding="utf-8"))
+        assert "unknown" in data
+        assert "capabilities" in data["unknown"]
 
 
 # ---------------------------------------------------------------------------
@@ -725,8 +727,8 @@ class TestDbUpsert:
 class TestNullMerge:
     """Test that untested (null) capabilities don't overwrite known values."""
 
-    def _seed_previous(self, tmp_output: Path, caps: dict) -> None:
-        prev = {"capabilities": caps, "clientRecord": {"protocolVersion": "", "title": "X", "url": ""}}
+    def _seed_previous(self, tmp_output: Path, caps: dict, *, client_record: dict | None = None) -> None:
+        prev = {"capabilities": caps, "clientRecord": client_record or {"protocolVersion": "", "title": "X", "url": ""}}
         tmp_output.parent.mkdir(parents=True, exist_ok=True)
         tmp_output.write_text(json.dumps({"X": prev}), encoding="utf-8")
 
@@ -769,6 +771,22 @@ class TestNullMerge:
         assert entry["capabilities"]["roots"]["supported"] is True
         # clientRecord must also include roots (since it's supported after merge)
         assert "roots" in entry["clientRecord"]
+
+    def test_null_merge_comparisons_use_merged_record(self, tmp_output: Path) -> None:
+        """Regression: comparisons must reflect null-merged capabilities, not raw state."""
+        prev_caps = {"roots": {"supported": True, "evidence": "deep probe"}}
+        prev_record = {"protocolVersion": "", "title": "X", "url": "", "roots": {}}
+        self._seed_previous(tmp_output, prev_caps, client_record=prev_record)
+        mw = _CapabilityCaptureMW(tmp_output)
+        mw._client_info = {"name": "X"}
+        # roots stays untested → merge preserves True
+        mw._flush()
+        entry = read_client_entry(tmp_output, "X")
+        # comparisonVsPreviousProbe should NOT report roots as changed
+        cmp = entry["comparisonVsPreviousProbe"]
+        if cmp["status"] == "has_changes":
+            changed_caps = [c["capability"] for c in cmp["changes"]]
+            assert "roots" not in changed_caps, "roots was preserved by merge, should not appear as changed"
 
     def test_merge_preserves_multiple_caps(self, tmp_output: Path) -> None:
         self._seed_previous(
