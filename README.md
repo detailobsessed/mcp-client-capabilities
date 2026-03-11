@@ -6,9 +6,9 @@
 This package strives to be the most up-to-date database of
 all [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) clients and their capabilities,
 to enable MCP servers understand what features an MCP client supports and how to respond to it
-in order to provide the best user and agent experience. 
+in order to provide the best user and agent experience.
 Unfortunately, the MCP protocol capability negotiation during the initial handshake
-is not sufficient for that—see [Background](#background) bellow for details. 
+is not sufficient for that—see [Background](#background) bellow for details.
 
 In other words, this package is the programmatic version of
 the [community MCP clients](https://modelcontextprotocol.io/clients#feature-support-matrix) table.
@@ -29,10 +29,10 @@ The JSON file contains an object where keys are client names and values an objec
 
     // Display name of the MCP client, e.g. "Example Client"
     title: string,
-    
+
     // URL to the homepage of the client
     url: string,
-    
+
     // Corresponds to `params.protocolVersion` from the MCP client's `initialize` request, e.g. "2024-11-05"
     protocolVersion: string,
 
@@ -45,23 +45,23 @@ The JSON file contains an object where keys are client names and values an objec
     prompts?: { listChanged?: boolean },
 
     // Present if the client supports accessing server tools,
-    // and whether it can handle their dynamic changes.        
+    // and whether it can handle their dynamic changes.
     tools?: { listChanged?: boolean },
 
-    // Present if the client supports elicitation from the server.    
+    // Present if the client supports elicitation from the server.
     elicitation?: object,
-    
+
     // Present if the client supports sampling from an LLM.
     sampling?: object,
 
     // Present if the client supports listing its roots,
-    // and whether it can notify the server about their dynamic changes        
+    // and whether it can notify the server about their dynamic changes
     roots?: { listChanged?: boolean },
 
-    // Present if the client can handle server's argument autocompletion suggestions.         
+    // Present if the client can handle server's argument autocompletion suggestions.
     completions?: object,
-    
-    // Present if the client supports reading log messages from the server.        
+
+    // Present if the client supports reading log messages from the server.
     logging?: object,
   },
   "<client-name-2>": { ... },
@@ -80,7 +80,7 @@ to the capabilities information provided by this package, as it will always be m
 
 ### Client versioning
 
-For each unique client name, the JSON file contains just one record representing the information about the 
+For each unique client name, the JSON file contains just one record representing the information about the
 latest known publicly-available release.
 This is under the assumption that most users will upgrade to the latest version of MCP clients,
 especially if something doesn't work right.
@@ -310,33 +310,80 @@ npm run example
 
 ### Retrieving client information
 
-To easily retrieve the client name and version from an MCP initialize request for adding or updating client capabilities, you can use a simple setup with netcat and ngrok:
+The easiest way to capture a client's capabilities is to run the **`mcp-probe`** server,
+which is included in this package. It listens via stdio (the standard MCP transport),
+captures the `initialize` handshake from the connecting client, and writes the result
+to a JSON file — no ngrok or netcat required.
 
-1. Spawn a netcat listener: `nc -lvp 3001`
-2. Expose it to the internet via ngrok: `ngrok http 3001`
-3. Run the MCP client and connect to your ngrok URL
+#### Test with a real MCP client
 
-In the netcat terminal, you will see the `initialize` request containing the client's information, such as:
+Add `mcp-probe` to the client's MCP server config, pointing at the local repo.
+In Claude Desktop's `claude_desktop_config.json`, Windsurf's MCP settings, or equivalent:
 
 ```json
 {
-  "jsonrpc": "2.0",
-  "id": 0,
-  "method": "initialize",
-  "params": {
-    "protocolVersion": "2025-06-18",
-    "capabilities": {
-      "sampling": {},
-      "elicitation": {},
-      "roots": { "listChanged": true }
-    },
-    "clientInfo": {
-      "name": "mcp-inspector",
-      "version": "0.16.5"
+  "mcpServers": {
+    "capability-probe": {
+      "command": "uv",
+      "args": ["--directory", "/path/to/mcp-client-capabilities", "run", "mcp-probe"]
     }
   }
 }
 ```
+
+Restart the client after saving the config. On next launch it will connect, capture
+capabilities, and write `mcp-probe-result.json` in the repo directory.
+
+#### Run from a published release
+
+```bash
+# from PyPI (once published):
+uvx --from mcp-client-capabilities mcp-probe
+
+# directly from GitHub:
+uvx --from git+https://github.com/apify/mcp-client-capabilities mcp-probe
+
+# with a custom output path:
+uvx --from mcp-client-capabilities mcp-probe --output ~/Desktop/out.json
+```
+
+#### Configure a published release in an MCP client
+
+```json
+{
+  "mcpServers": {
+    "capability-probe": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/apify/mcp-client-capabilities", "mcp-probe"]
+    }
+  }
+}
+```
+
+Once the client connects, `mcp-probe-result.json` (or your custom `--output` path) will
+contain the captured capabilities:
+
+```json
+{
+  "capturedAt": "2025-06-18T10:00:00+00:00",
+  "clientInfo": {
+    "name": "Claude",
+    "version": "1.0.0"
+  },
+  "protocolVersion": "2025-06-18",
+  "capabilities": {
+    "roots": { "listChanged": true },
+    "sampling": {},
+    "elicitation": {}
+  }
+}
+```
+
+You can also call the `get_probe_results` tool from within the client to retrieve the
+captured data directly in the conversation.
+
+The output maps directly to the fields in `mcp-clients.json`, making it straightforward
+to open a pull request adding or updating a client entry.
 
 ### API
 
