@@ -1,0 +1,69 @@
+{
+  "claude-ai": {
+    "capturedAt": "2026-03-11T16:01:52.645815+00:00",
+    "clientInfo": {
+      "name": "claude-ai",
+      "version": "0.1.0"
+    },
+    "protocolVersion": "2025-11-25",
+    "capabilities": {
+      "tools": {
+        "supported": true,
+        "evidence": "client called tools/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "resources": {
+        "supported": true,
+        "evidence": "client called resources/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "prompts": {
+        "supported": true,
+        "evidence": "client called prompts/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "roots": {
+        "supported": false,
+        "evidence": "list_roots request failed: McpError"
+      },
+      "sampling": {
+        "supported": false,
+        "evidence": "sampling request failed: ValueError"
+      },
+      "elicitation": {
+        "supported": false,
+        "evidence": "elicitation request failed: McpError"
+      },
+      "completions": {
+        "supported": null,
+        "evidence": "not tested"
+      },
+      "logging": {
+        "supported": null,
+        "evidence": "not tested"
+      }
+    },
+    "clientRecord": {
+      "protocolVersion": "2025-11-25",
+      "title": "claude-ai",
+      "url": "",
+      "tools": {},
+      "resources": {},
+      "prompts": {}
+    },
+    "comparisonVsDatabase": {
+      "status": "has_discrepancies",
+      "discrepancies": [
+        {
+          "capability": "protocolVersion",
+          "database": "2025-06-18",
+          "probe": "2025-11-25"
+        }
+      ]
+    },
+    "comparisonVsPreviousProbe": {
+      "status": "first_probe",
+      "message": "No previous probe for this client"
+    }
+  }
+}
