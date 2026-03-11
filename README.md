@@ -135,7 +135,7 @@ most clients don't use versions anyway. This might change in the future.
 | [Raycast](https://www.raycast.com) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
 | [Roo Code](https://roocode.com) | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [Visual Studio Code](https://code.visualstudio.com) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| [Windsurf Editor](https://codeium.com/windsurf) | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| [Windsurf Editor](https://codeium.com/windsurf) | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [Zed Editor](https://zed.dev) | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 <!-- MCP_CLIENTS_TABLE_END -->
 
@@ -149,6 +149,18 @@ most clients don't use versions anyway. This might change in the future.
 - <a name="tasks"></a>**Tasks**: Whether the client supports task-augmented tool calls. This enables asynchronous execution where the server can poll task status and retrieve results after completion, useful for expensive or long-running operations.
 - <a name="roots"></a>**Roots**: Whether the client supports managing root directories. Roots define the workspace or directories that the client wants the server to have access to.
 - <a name="elicitation"></a>**Elicitation**: Whether the client supports elicitation from the server. This allows the server to request additional information or clarification from the client during interactions.
+
+### Probed capabilities (verified)
+
+The following table is generated from probe-verified data in
+`mcp-clients-2026.json`. ✅ = supported, ❌ = unsupported, ❓ = untested.
+
+<!-- MCP_PROBED_TABLE_START -->
+| Display name | Protocol | [Resources](#resources) | [Prompts](#prompts) | [Tools](#tools) | [Discovery](#tools) | [Sampling](#sampling) | [Roots](#roots) | [Elicitation](#elicitation) | Last probed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| claude-ai | 2025-11-25 | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | 2026-03-11 |
+| Windsurf | 2025-11-25 | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | 2026-03-11 |
+<!-- MCP_PROBED_TABLE_END -->
 
 ## Usage
 
@@ -310,80 +322,176 @@ npm run example
 
 ### Retrieving client information
 
-The easiest way to capture a client's capabilities is to run the **`mcp-probe`** server,
-which is included in this package. It listens via stdio (the standard MCP transport),
-captures the `initialize` handshake from the connecting client, and writes the result
-to a JSON file — no ngrok or netcat required.
+The **`mcp-probe`** server discovers client capabilities through three
+complementary strategies:
 
-#### Test with a real MCP client
+1. **Passive capture** — inspects the `initialize` handshake for declared
+   capabilities (roots, sampling, elicitation).
+2. **Active observation** — the server registers a tool, resource, and prompt
+   so it advertises all three capability types; it then records which MCP
+   methods the client actually calls (`tools/list`, `resources/list`, etc.).
+3. **Deep probing** — the `run_full_probe` tool sends `listChanged`
+   notifications and issues server→client requests (roots, sampling,
+   elicitation) to confirm support beyond what the handshake declares.
 
-Add `mcp-probe` to the client's MCP server config, pointing at the local repo.
-In Claude Desktop's `claude_desktop_config.json`, Windsurf's MCP settings, or equivalent:
+Tiers 1 and 2 run automatically on every connection. Tier 3 requires calling
+the `run_full_probe` tool (the server instructions ask the agent to do this).
 
-```json
-{
-  "mcpServers": {
-    "capability-probe": {
-      "command": "uv",
-      "args": ["--directory", "/path/to/mcp-client-capabilities", "run", "mcp-probe"]
-    }
-  }
-}
-```
+#### 1. Install mcp-probe in your MCP client
 
-Restart the client after saving the config. On next launch it will connect, capture
-capabilities, and write `mcp-probe-result.json` in the repo directory.
-
-#### Run from a published release
+The easiest way is via `fastmcp install` (requires a local clone):
 
 ```bash
-# from PyPI (once published):
-uvx --from mcp-client-capabilities mcp-probe
+git clone https://github.com/apify/mcp-client-capabilities
+cd mcp-client-capabilities
 
-# directly from GitHub:
-uvx --from git+https://github.com/apify/mcp-client-capabilities mcp-probe
+# Pick your client:
+uv run fastmcp install claude-desktop src/mcp_client_capabilities/probe_server.py
+uv run fastmcp install cursor         src/mcp_client_capabilities/probe_server.py
+uv run fastmcp install claude-code    src/mcp_client_capabilities/probe_server.py
+uv run fastmcp install gemini-cli     src/mcp_client_capabilities/probe_server.py
+uv run fastmcp install goose          src/mcp_client_capabilities/probe_server.py
 
-# with a custom output path:
-uvx --from mcp-client-capabilities mcp-probe --output ~/Desktop/out.json
+# Any other client — generate the JSON config and paste it manually:
+uv run fastmcp install mcp-json       src/mcp_client_capabilities/probe_server.py
 ```
 
-#### Configure a published release in an MCP client
+You may need to restart the client after saving the config.
+
+#### Testing multiple clients
+
+No special configuration needed — results are automatically keyed by client
+name in the shared database file (`~/mcp-probes/mcp-clients-2026.json`).
+Just install and run the probe in each client:
+
+```bash
+uv run fastmcp install cursor      src/mcp_client_capabilities/probe_server.py
+uv run fastmcp install claude-code src/mcp_client_capabilities/probe_server.py
+uv run fastmcp install goose       src/mcp_client_capabilities/probe_server.py
+```
+
+Each probe upserts its results into the same DB file. Re-probing the same
+client updates its entry and the `comparisonVsPreviousProbe` section shows
+what changed.
+
+#### 2. Run the full probe
+
+On connect, the DB file is updated with Tier 1 + 2 results. To
+complete the scan, ask the agent to **read the `probe://status` resource** and
+then **call the `run_full_probe` tool** (or paste this into chat):
+
+> Please read the `probe://status` resource from the capability-probe MCP
+> server, then call its `run_full_probe` tool.
+
+Reading the resource first ensures clients that list resources lazily (e.g.
+Windsurf) are correctly detected. The `run_full_probe` tool then triggers
+Tier 3: `listChanged` notification tests and server→client requests for roots,
+sampling, and elicitation.
+
+> [!NOTE]
+> The sampling probe triggers a lightweight LLM call (`max_tokens=10`).
+> The elicitation probe shows a confirmation dialog to the user.
+
+#### 3. Read the results
+
+Results are stored in the DB file (`~/mcp-probes/mcp-clients-2026.json`) keyed
+by client name. Each entry has four sections:
 
 ```json
 {
-  "mcpServers": {
-    "capability-probe": {
-      "command": "uvx",
-      "args": ["--from", "git+https://github.com/apify/mcp-client-capabilities", "mcp-probe"]
+  "claude-ai": {
+    "capturedAt": "2026-03-11T12:00:10+00:00",
+    "clientInfo": { "name": "claude-ai", "version": "0.1.0" },
+    "protocolVersion": "2025-11-25",
+    "capabilities": {
+      "tools": {
+        "supported": true,
+        "evidence": "client called tools/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "resources": { "supported": true, "evidence": "client called resources/list", "listChanged": false },
+      "prompts":   { "supported": true, "evidence": "client called prompts/list", "listChanged": false },
+      "roots":       { "supported": false, "evidence": "list_roots request failed: McpError" },
+      "sampling":    { "supported": false, "evidence": "sampling request failed: ValueError" },
+      "elicitation": { "supported": false, "evidence": "elicitation request failed: McpError" },
+      "completions": { "supported": null,  "evidence": "not tested" },
+      "logging":     { "supported": null,  "evidence": "not tested" }
+    },
+    "clientRecord": {
+      "protocolVersion": "2025-11-25",
+      "title": "claude-ai",
+      "url": "",
+      "tools": {},
+      "resources": {},
+      "prompts": {}
+    },
+    "comparisonVsDatabase": {
+      "status": "has_discrepancies",
+      "discrepancies": [
+        { "capability": "protocolVersion", "database": "2025-06-18", "probe": "2025-11-25" }
+      ]
+    },
+    "comparisonVsPreviousProbe": {
+      "status": "first_probe",
+      "message": "No previous probe for this client"
     }
   }
 }
 ```
 
-Once the client connects, `mcp-probe-result.json` (or your custom `--output` path) will
-contain the captured capabilities:
+**`capabilities`** — detailed per-capability breakdown:
 
-```json
-{
-  "capturedAt": "2025-06-18T10:00:00+00:00",
-  "clientInfo": {
-    "name": "Claude",
-    "version": "1.0.0"
-  },
-  "protocolVersion": "2025-06-18",
-  "capabilities": {
-    "roots": { "listChanged": true },
-    "sampling": {},
-    "elicitation": {}
-  }
-}
+| `supported` | Meaning |
+|---|---|
+| `true` | Confirmed on the wire (observed or actively probed) |
+| `false` | Actively tested and not supported |
+| `null` | Not yet tested (`run_full_probe` not called, or no probe exists for this capability) |
+
+**`clientRecord`** — ready to paste into `mcp-clients.json`:
+
+| Value | Meaning |
+|---|---|
+| `{}` | Supported (observed or actively confirmed) |
+| `{ "listChanged": true }` | Supported; responds to `listChanged` notifications |
+| absent | Not supported or not tested |
+
+**`comparisonVsDatabase`** — probe results vs the existing `mcp-clients.json`:
+
+| `status` | Meaning |
+|---|---|
+| `"match"` | Probe agrees with database |
+| `"has_discrepancies"` | Differences found (see `discrepancies` array) |
+| `"new_client"` | Client not found in database |
+
+**`comparisonVsPreviousProbe`** — current probe vs the previous probe in the DB:
+
+| `status` | Meaning |
+|---|---|
+| `"no_changes"` | Same results as previous probe |
+| `"has_changes"` | Capabilities changed (see `changes` array) |
+| `"first_probe"` | No previous probe for this client |
+
+#### 4. Contributing results
+
+After probing a client, you can contribute the results back:
+
+1. Copy the client's entry from `~/mcp-probes/mcp-clients-2026.json`
+2. Add it to `src/mcp_client_capabilities/mcp-clients-2026.json` in the repo,
+   filling in `clientRecord.title` and `clientRecord.url`
+3. Submit a PR
+
+#### CLI options
+
+```bash
+# default DB path (always ~/mcp-probes/mcp-clients-2026.json):
+mcp-probe
+
+# custom DB path:
+mcp-probe --db ~/Desktop/my-probes.json
+
+# via environment variable (useful with fastmcp install --env):
+MCP_PROBE_DB=~/custom/db.json mcp-probe
 ```
-
-You can also call the `get_probe_results` tool from within the client to retrieve the
-captured data directly in the conversation.
-
-The output maps directly to the fields in `mcp-clients.json`, making it straightforward
-to open a pull request adding or updating a client entry.
 
 ### API
 

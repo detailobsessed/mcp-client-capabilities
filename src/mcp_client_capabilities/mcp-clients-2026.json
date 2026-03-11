@@ -65,5 +65,65 @@
       "status": "first_probe",
       "message": "No previous probe for this client"
     }
+  },
+  "Windsurf": {
+    "capturedAt": "2026-03-11T16:24:55.861202+00:00",
+    "clientInfo": {
+      "name": "Windsurf",
+      "version": "1.0.0"
+    },
+    "protocolVersion": "2025-11-25",
+    "capabilities": {
+      "tools": {
+        "supported": true,
+        "evidence": "client called tools/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "resources": {
+        "supported": true,
+        "evidence": "client called resources/read; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "prompts": {
+        "supported": true,
+        "evidence": "client called prompts/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "roots": {
+        "supported": false,
+        "evidence": "list_roots request failed: McpError"
+      },
+      "sampling": {
+        "supported": false,
+        "evidence": "sampling request failed: ValueError"
+      },
+      "elicitation": {
+        "supported": false,
+        "evidence": "elicitation request failed: McpError"
+      },
+      "completions": {
+        "supported": null,
+        "evidence": "not tested"
+      },
+      "logging": {
+        "supported": null,
+        "evidence": "not tested"
+      }
+    },
+    "clientRecord": {
+      "protocolVersion": "2025-11-25",
+      "title": "Windsurf",
+      "url": "",
+      "tools": {},
+      "resources": {},
+      "prompts": {}
+    },
+    "comparisonVsDatabase": {
+      "status": "match"
+    },
+    "comparisonVsPreviousProbe": {
+      "status": "first_probe",
+      "message": "No previous probe for this client"
+    }
   }
 }
