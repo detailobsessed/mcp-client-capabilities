@@ -150,19 +150,14 @@ most clients don't use versions anyway. This might change in the future.
 - <a name="roots"></a>**Roots**: Whether the client supports managing root directories. Roots define the workspace or directories that the client wants the server to have access to.
 - <a name="elicitation"></a>**Elicitation**: Whether the client supports elicitation from the server. This allows the server to request additional information or clarification from the client during interactions.
 
-### Probed capabilities (verified)
+### Probe-verified capabilities
 
-The following table is generated from probe-verified data in
-`mcp-clients-2026.json`. ✅ = supported, ❌ = unsupported, ❓ = untested.
+For a richer, merged view of community-reported **and** probe-verified data — including
+`listChanged` support and discrepancies — see the
+**[interactive capabilities table](https://nicobailon.github.io/mcp-client-capabilities/)**.
 
-<!-- MCP_PROBED_TABLE_START -->
-| Display name | Protocol | [Resources](#resources) | [Prompts](#prompts) | [Tools](#tools) | [Discovery](#tools) | [Sampling](#sampling) | [Roots](#roots) | [Elicitation](#elicitation) | Last probed |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| claude-ai | 2025-11-25 | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | 2026-03-11 |
-| dev.warp.Warp-Preview | 2025-03-26 | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | 2026-03-11 |
-| Windsurf | 2025-11-25 | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | 2026-03-11 |
-| Zed | 2025-03-26 | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | 2026-03-11 |
-<!-- MCP_PROBED_TABLE_END -->
+The table merges `mcp-clients.json` (above) with `mcp-clients-2026.json` (probe results).
+Clients marked ✔ have been verified by the [probe server](#probe-server).
 
 ## Usage
 
@@ -297,8 +292,8 @@ Therefore, we're releasing this package with a hope to accelerate the developmen
 ## Contributors
 
 We highly appreciate community contributions to make the list of MCP clients and their capabilities
-complete and up to date. To add a new client or updated an existing one, simply edit the `src/mcp-clients.json` file
-and submit a pull request:
+complete and up to date. To add a new client or update an existing one, simply edit the
+`src/mcp_client_capabilities/mcp-clients.json` file and submit a pull request:
 
 - The pull request should contain some evidence to back up the existence of the MCP client capabilities, e.g. screenshot
   from usage, link to its source code, or official docs.
@@ -309,20 +304,33 @@ Thanks to [Alpic](https://alpic.ai) for contributing the list of clients from th
 
 ### Development
 
-The build process includes validation to ensure the JSON matches the TypeScript interfaces.
+First, install both Python and Node.js dependencies:
 
 ```bash
-# Validate the JSON file structure
-npm run test
-
-# Build the project (includes validation)
-npm run build
-
-# Run example
-npm run example
+uv sync          # Python deps (probe server, linting, tests, site generation)
+npm install      # Node deps (TypeScript validation)
 ```
 
-### Retrieving client information
+Common tasks via [poe](https://github.com/nat-n/poethepoet):
+
+```bash
+poe lint         # Ruff lint
+poe format       # Ruff format
+poe typecheck    # ty type check
+poe test         # pytest
+poe check        # lint + typecheck + test
+poe sync         # Copy local probe DB into repo (see below)
+poe site         # Regenerate the GitHub Pages site
+```
+
+The build process includes validation to ensure the JSON matches the TypeScript interfaces:
+
+```bash
+npm run test     # Validate mcp-clients.json against TypeScript types
+npm run build    # Build (includes validation)
+```
+
+## Probe Server
 
 The **`mcp-probe`** server discovers client capabilities through three
 complementary strategies:
@@ -475,12 +483,15 @@ by client name. Each entry has four sections:
 
 #### 4. Contributing results
 
-After probing a client, you can contribute the results back:
+After probing a client, sync your local results into the repo and submit a PR:
 
-1. Copy the client's entry from `~/mcp-probes/mcp-clients-2026.json`
-2. Add it to `src/mcp_client_capabilities/mcp-clients-2026.json` in the repo,
-   filling in `clientRecord.title` and `clientRecord.url`
-3. Submit a PR
+```bash
+poe sync         # Copies ~/mcp-probes/mcp-clients-2026.json into the repo
+git diff         # Review the changes
+```
+
+Then commit and open a pull request. The GitHub Pages site will regenerate
+automatically on merge.
 
 #### CLI options
 
@@ -511,4 +522,3 @@ MCP_PROBE_DB=~/custom/db.json mcp-probe
 
 - Add all clients from https://modelcontextprotocol.io/clients#feature-support-matrix with accurate details
 - Add SDK for Python
-- Create a public testing MCP server to probe the client capabilities

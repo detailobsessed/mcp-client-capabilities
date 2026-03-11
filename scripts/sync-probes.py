@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy the local probe DB into the repo and regenerate the README table.
+"""Copy the local probe DB into the repo.
 
 Usage:
     uv run python scripts/sync-probes.py
@@ -8,8 +8,6 @@ Usage:
 from __future__ import annotations
 
 import shutil
-import subprocess
-import sys
 from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parent.parent
@@ -24,9 +22,6 @@ def main() -> None:
 
     shutil.copy2(_LOCAL_DB, _REPO_DB)
     print(f"Copied {_LOCAL_DB} → {_REPO_DB}")
-
-    # Regenerate the README table
-    subprocess.run([sys.executable, str(_ROOT / "scripts" / "generate-probed-table.py")], check=True)
 
 
 if __name__ == "__main__":

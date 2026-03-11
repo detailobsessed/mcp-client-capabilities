@@ -39,7 +39,7 @@ types_or = ["python", "pyi"]
 id = "ty-check"
 name = "ty type check"
 language = "system"
-entry = "uv run ty check"
+entry = "uv run --group site ty check"
 types_or = ["python", "pyi"]
 pass_filenames = false
 
@@ -50,6 +50,28 @@ language = "system"
 entry = "uv run pytest --tb=short -q"
 types_or = ["python", "pyi", "json"]
 pass_filenames = false
+
+# ── Markdown: link checker (requires lychee: brew install lychee) ─────────────
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "lychee"
+name = "lychee link check"
+language = "system"
+entry = "lychee --no-progress --config .lychee.toml"
+types = ["markdown"]
+
+# ── Web: prettier for HTML / CSS / JS ─────────────────────────────────────────
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "prettier"
+name = "prettier"
+language = "system"
+entry = "npx prettier --write"
+types_or = ["html", "css", "javascript"]
 
 # ── TypeScript: validate mcp-clients.json against TypeScript types ─────────────
 [[repos]]

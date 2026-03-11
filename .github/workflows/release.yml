@@ -48,9 +48,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout repository
-                uses: actions/checkout@v4
+                uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
             -   name: Use Node.js 24
-                uses: actions/setup-node@v4
+                uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
                 with:
                     node-version: 24
                     cache: 'npm'
@@ -69,12 +69,12 @@ jobs:
             version_commitish: ${{ steps.commit.outputs.commit_long_sha || github.sha }}
         steps:
             -   name: Checkout repository
-                uses: actions/checkout@v4
+                uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
                 with:
                     token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             -   name: Use Node.js 24
-                uses: actions/setup-node@v4
+                uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
                 with:
                     node-version: 24
 
@@ -87,7 +87,7 @@ jobs:
 
             -   name: Commit changes
                 id: commit
-                uses: EndBug/add-and-commit@v9
+                uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
                 with:
                    author_name: Apify Release Bot
                    author_email: noreply@apify.com
@@ -105,7 +105,7 @@ jobs:
           name: pypi
           url: https://pypi.org/project/mcp-client-capabilities
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
                 with:
                     ref: ${{ needs.update_version.outputs.version_commitish }}
             -   name: Verify commit SHA
@@ -135,7 +135,7 @@ jobs:
 
                      echo "✓ Version check passed: pyproject.toml has correct version $ACTUAL_VERSION"
             - name: Prepare distribution
-              uses: apify/workflows/prepare-pypi-distribution@e9d8b247c5be28889b1f6df1e23a991c3d0f6305
+              uses: apify/workflows/prepare-pypi-distribution@17bea1b9bf18718690385fb4d2b4788e5a9e9e57 # v0.37.0
               with:
                 ref: ${{ needs.update_version.outputs.version_commitish }}
                 package_name: mcp-client-capabilities
@@ -154,7 +154,7 @@ jobs:
           id-token: write  # Required for OIDC
           contents: read
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
                 with:
                     ref: ${{ needs.update_version.outputs.version_commitish }}
             -   name: Verify commit SHA
@@ -184,7 +184,7 @@ jobs:
 
                      echo "✓ Version check passed: package.json has correct version $ACTUAL_VERSION"
             -   name: Use Node.js 24
-                uses: actions/setup-node@v4
+                uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
                 with:
                     node-version: 24
                     cache: 'npm'
@@ -206,9 +206,9 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
             -   name: Create release
-                uses: softprops/action-gh-release@v2
+                uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
                 with:
                     tag_name: ${{ needs.release_metadata.outputs.tag_name }}
                     name: ${{ needs.release_metadata.outputs.version_number }}
