@@ -147,3 +147,6 @@ data/
 
 # MCP probe output
 mcp-probe-result.json
+
+# ByteRover agent memory (local-only)
+.brv/

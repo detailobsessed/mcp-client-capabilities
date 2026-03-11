@@ -35,6 +35,22 @@ language = "system"
 entry = "uv run ruff format"
 types_or = ["python", "pyi"]
 
+[[repos.hooks]]
+id = "ty-check"
+name = "ty type check"
+language = "system"
+entry = "uv run ty check"
+types_or = ["python", "pyi"]
+pass_filenames = false
+
+[[repos.hooks]]
+id = "pytest"
+name = "pytest"
+language = "system"
+entry = "uv run pytest --tb=short -q"
+types_or = ["python", "pyi", "json"]
+pass_filenames = false
+
 # ── TypeScript: validate mcp-clients.json against TypeScript types ─────────────
 [[repos]]
 repo = "local"
