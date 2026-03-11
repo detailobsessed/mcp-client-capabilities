@@ -144,3 +144,6 @@ env.bak/
 venv.bak/
 
 data/
+
+# MCP probe output
+mcp-probe-result.json
