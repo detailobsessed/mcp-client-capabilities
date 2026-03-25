@@ -11,10 +11,10 @@ from .mcp_types import ClientsIndex, McpClientRecord
 
 # Load client capabilities from JSON
 _json_path = Path(__file__).parent / "mcp-clients.json"
-with open(_json_path, "r", encoding="utf-8") as f:
+with _json_path.open(encoding="utf-8") as f:
     _clients_data = json.load(f)
 
 # All MCP client capabilities indexed by client name
-mcp_clients: ClientsIndex = _clients_data  # type: ignore
+mcp_clients: ClientsIndex = _clients_data
 
-__all__ = ["mcp_clients", "ClientsIndex", "McpClientRecord"]
+__all__ = ["ClientsIndex", "McpClientRecord", "mcp_clients"]

@@ -1,0 +1,256 @@
+{
+  "claude-ai": {
+    "capturedAt": "2026-03-11T16:01:52.645815+00:00",
+    "clientInfo": {
+      "name": "claude-ai",
+      "version": "0.1.0"
+    },
+    "protocolVersion": "2025-11-25",
+    "capabilities": {
+      "tools": {
+        "supported": true,
+        "evidence": "client called tools/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "resources": {
+        "supported": true,
+        "evidence": "client called resources/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "prompts": {
+        "supported": true,
+        "evidence": "client called prompts/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "roots": {
+        "supported": false,
+        "evidence": "list_roots request failed: McpError"
+      },
+      "sampling": {
+        "supported": false,
+        "evidence": "sampling request failed: ValueError"
+      },
+      "elicitation": {
+        "supported": false,
+        "evidence": "elicitation request failed: McpError"
+      },
+      "completions": {
+        "supported": null,
+        "evidence": "not tested"
+      },
+      "logging": {
+        "supported": null,
+        "evidence": "not tested"
+      }
+    },
+    "clientRecord": {
+      "protocolVersion": "2025-11-25",
+      "title": "claude-ai",
+      "url": "",
+      "tools": {},
+      "resources": {},
+      "prompts": {}
+    },
+    "comparisonVsDatabase": {
+      "status": "has_discrepancies",
+      "discrepancies": [
+        {
+          "capability": "protocolVersion",
+          "database": "2025-06-18",
+          "probe": "2025-11-25"
+        }
+      ]
+    },
+    "comparisonVsPreviousProbe": {
+      "status": "first_probe",
+      "message": "No previous probe for this client"
+    }
+  },
+  "Windsurf": {
+    "capturedAt": "2026-03-11T16:44:49.580665+00:00",
+    "clientInfo": {
+      "name": "Windsurf",
+      "version": "1.0.0"
+    },
+    "protocolVersion": "2025-11-25",
+    "capabilities": {
+      "tools": {
+        "supported": true,
+        "evidence": "client called tools/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "resources": {
+        "supported": true,
+        "evidence": "client called resources/read; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "prompts": {
+        "supported": true,
+        "evidence": "client called prompts/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "roots": {
+        "supported": false,
+        "evidence": "list_roots request failed: McpError"
+      },
+      "sampling": {
+        "supported": false,
+        "evidence": "sampling request failed: ValueError"
+      },
+      "elicitation": {
+        "supported": false,
+        "evidence": "elicitation request failed: McpError"
+      },
+      "completions": {
+        "supported": null,
+        "evidence": "not tested"
+      },
+      "logging": {
+        "supported": null,
+        "evidence": "not tested"
+      }
+    },
+    "clientRecord": {
+      "protocolVersion": "2025-11-25",
+      "title": "Windsurf",
+      "url": "",
+      "tools": {},
+      "resources": {},
+      "prompts": {}
+    },
+    "comparisonVsDatabase": {
+      "status": "match"
+    },
+    "comparisonVsPreviousProbe": {
+      "status": "has_changes",
+      "changes": [
+        {
+          "capability": "resources",
+          "previous": "absent",
+          "current": "supported"
+        }
+      ]
+    }
+  },
+  "dev.warp.Warp-Preview": {
+    "capturedAt": "2026-03-11T16:27:33.930544+00:00",
+    "clientInfo": {
+      "name": "dev.warp.Warp-Preview",
+      "version": "v0.2026.03.04.08.22.preview_03"
+    },
+    "protocolVersion": "2025-03-26",
+    "capabilities": {
+      "tools": {
+        "supported": true,
+        "evidence": "client called tools/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "resources": {
+        "supported": true,
+        "evidence": "client called resources/list, resources/read; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "prompts": {
+        "supported": false,
+        "evidence": "server advertised prompts, client never interacted"
+      },
+      "roots": {
+        "supported": true,
+        "evidence": "list_roots returned 0 root(s)"
+      },
+      "sampling": {
+        "supported": false,
+        "evidence": "sampling request failed: ValueError"
+      },
+      "elicitation": {
+        "supported": true,
+        "evidence": "elicitation request returned: action=decline"
+      },
+      "completions": {
+        "supported": null,
+        "evidence": "not tested"
+      },
+      "logging": {
+        "supported": null,
+        "evidence": "not tested"
+      }
+    },
+    "clientRecord": {
+      "protocolVersion": "2025-03-26",
+      "title": "dev.warp.Warp-Preview",
+      "url": "",
+      "tools": {},
+      "resources": {},
+      "roots": {},
+      "elicitation": {}
+    },
+    "comparisonVsDatabase": {
+      "status": "new_client",
+      "message": "dev.warp.Warp-Preview not found in mcp-clients.json"
+    },
+    "comparisonVsPreviousProbe": {
+      "status": "first_probe",
+      "message": "No previous probe for this client"
+    }
+  },
+  "Zed": {
+    "capturedAt": "2026-03-11T16:49:27.525977+00:00",
+    "clientInfo": {
+      "name": "Zed",
+      "version": "0.1.0"
+    },
+    "protocolVersion": "2025-03-26",
+    "capabilities": {
+      "tools": {
+        "supported": true,
+        "evidence": "client called tools/list; listChanged: sent notification, client re-listed within 5s",
+        "listChanged": true
+      },
+      "resources": {
+        "supported": false,
+        "evidence": "server advertised resources, client never interacted"
+      },
+      "prompts": {
+        "supported": true,
+        "evidence": "client called prompts/list; listChanged: sent notification, client did not re-list within 5s",
+        "listChanged": false
+      },
+      "roots": {
+        "supported": false,
+        "evidence": "list_roots request failed: TimeoutError"
+      },
+      "sampling": {
+        "supported": false,
+        "evidence": "sampling request failed: ValueError"
+      },
+      "elicitation": {
+        "supported": false,
+        "evidence": "elicitation request failed: TimeoutError"
+      },
+      "completions": {
+        "supported": null,
+        "evidence": "not tested"
+      },
+      "logging": {
+        "supported": null,
+        "evidence": "not tested"
+      }
+    },
+    "clientRecord": {
+      "protocolVersion": "2025-03-26",
+      "title": "Zed",
+      "url": "",
+      "tools": {
+        "listChanged": true
+      },
+      "prompts": {}
+    },
+    "comparisonVsDatabase": {
+      "status": "match"
+    },
+    "comparisonVsPreviousProbe": {
+      "status": "first_probe",
+      "message": "No previous probe for this client"
+    }
+  }
+}

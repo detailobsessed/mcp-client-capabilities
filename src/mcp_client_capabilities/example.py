@@ -10,7 +10,7 @@ print("=== MCP Client Capabilities ===\n")
 
 # Access Claude Desktop capabilities directly
 print("Claude Desktop capabilities:")
-print(json.dumps(mcp_clients["claude-desktop"], indent=2))
+print(json.dumps(mcp_clients["claude-ai"], indent=2))
 print()
 
 # List all available clients
@@ -18,19 +18,22 @@ print("Available clients:", list(mcp_clients.keys()))
 print()
 
 # Check specific capabilities
-claude_desktop = mcp_clients.get("claude-desktop")
+claude_desktop = mcp_clients.get("claude-ai")
 if claude_desktop:
-    if claude_desktop.get("prompts", {}).get("list_changed"):
+    prompts = claude_desktop.get("prompts")
+    if prompts and prompts.get("listChanged"):
         print("✓ Claude Desktop supports prompts list change notifications")
     else:
         print("✗ Claude Desktop does not support prompts list change notifications")
 
-    if claude_desktop.get("resources", {}).get("subscribe"):
+    resources = claude_desktop.get("resources")
+    if resources and resources.get("subscribe"):
         print("✓ Claude Desktop supports resource subscriptions")
     else:
         print("✗ Claude Desktop does not support resource subscriptions")
 
-    if claude_desktop.get("tools", {}).get("list_changed"):
+    tools = claude_desktop.get("tools")
+    if tools and tools.get("listChanged"):
         print("✓ Claude Desktop supports tools list change notifications")
     else:
         print("✗ Claude Desktop does not support tools list change notifications")

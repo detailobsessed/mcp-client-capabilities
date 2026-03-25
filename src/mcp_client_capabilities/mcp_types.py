@@ -2,24 +2,24 @@
 TypeScript interfaces for Model Context Protocol (MCP) client capabilities
 """
 
-from typing import Any, Optional, TypedDict
+from typing import TypedDict
 
 
 class Resources(TypedDict, total=False):
-    list_changed: Optional[bool]
-    subscribe: Optional[bool]
+    listChanged: bool | None
+    subscribe: bool | None
 
 
 class Prompts(TypedDict, total=False):
-    list_changed: Optional[bool]
+    listChanged: bool | None
 
 
 class Tools(TypedDict, total=False):
-    list_changed: Optional[bool]
+    listChanged: bool | None
 
 
 class Roots(TypedDict, total=False):
-    list_changed: Optional[bool]
+    listChanged: bool | None
 
 
 class Completions(TypedDict, total=False):
@@ -42,19 +42,27 @@ class Sampling(TypedDict, total=False):
     pass
 
 
-class McpClientRecord(TypedDict):
+class Tasks(TypedDict, total=False):
+    pass
+
+
+class _McpClientRecordRequired(TypedDict):
     title: str
     url: str
-    protocol_version: str
-    resources: Optional[Resources]
-    prompts: Optional[Prompts]
-    tools: Optional[Tools]
-    elicitation: Optional[Elicitation]
-    sampling: Optional[Sampling]
-    roots: Optional[Roots]
-    completions: Optional[Completions]
-    logging: Optional[Logging]
-    experimental: Optional[Experimental]
+    protocolVersion: str
+
+
+class McpClientRecord(_McpClientRecordRequired, total=False):
+    resources: Resources
+    prompts: Prompts
+    tools: Tools
+    elicitation: Elicitation
+    sampling: Sampling
+    roots: Roots
+    completions: Completions
+    logging: Logging
+    experimental: Experimental
+    tasks: Tasks
 
 
 ClientsIndex = dict[str, McpClientRecord]

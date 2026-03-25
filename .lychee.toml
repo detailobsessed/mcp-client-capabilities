@@ -1,0 +1,11 @@
+# Lychee link checker configuration
+# https://lychee.cli.rs/usage/config/
+
+# Accept 403/503 (sites that block bots: claude.ai, make.com, npmjs, glama)
+accept = "200,204,301,302,403,503"
+
+# Skip known dead or private links
+exclude = [
+    "https://github.com/factory-ai/factory-cli",
+    "https://nicobailon.github.io/mcp-client-capabilities/",
+]

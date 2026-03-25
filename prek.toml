@@ -1,0 +1,86 @@
+minimum_prek_version = "0.3.0"
+
+default_language_version.python = "3.12"
+
+# ── File integrity (built-in, offline, zero setup) ────────────────────────────
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "trailing-whitespace" },
+  { id = "end-of-file-fixer" },
+  { id = "check-toml" },
+  { id = "check-json", exclude = "tsconfig.*\\.json$" },
+  { id = "check-yaml" },
+  { id = "check-case-conflict" },
+  { id = "check-merge-conflict" },
+  { id = "detect-private-key" },
+  { id = "no-commit-to-branch" },
+]
+
+# ── Python: ruff (uses the uv-managed install from dev deps) ──────────────────
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "ruff-lint"
+name = "ruff lint"
+language = "system"
+entry = "uv run ruff check --fix"
+types_or = ["python", "pyi"]
+
+[[repos.hooks]]
+id = "ruff-format"
+name = "ruff format"
+language = "system"
+entry = "uv run ruff format"
+types_or = ["python", "pyi"]
+
+[[repos.hooks]]
+id = "ty-check"
+name = "ty type check"
+language = "system"
+entry = "uv run --group site ty check"
+types_or = ["python", "pyi"]
+pass_filenames = false
+
+[[repos.hooks]]
+id = "pytest"
+name = "pytest"
+language = "system"
+entry = "uv run pytest --tb=short -q"
+types_or = ["python", "pyi", "json"]
+pass_filenames = false
+
+# ── Markdown: link checker (requires lychee: brew install lychee) ─────────────
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "lychee"
+name = "lychee link check"
+language = "system"
+entry = "lychee --no-progress --config .lychee.toml"
+types = ["markdown"]
+
+# ── Web: prettier for HTML / CSS / JS ─────────────────────────────────────────
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "prettier"
+name = "prettier"
+language = "system"
+entry = "npx prettier --write"
+types_or = ["html", "css", "javascript"]
+
+# ── TypeScript: validate mcp-clients.json against TypeScript types ─────────────
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "ts-validate"
+name = "validate mcp-clients.json"
+language = "system"
+entry = "npx tsx src/validate.ts"
+files = "src/(mcp_client_capabilities/mcp-clients\\.json|validate\\.ts|types\\.ts)$"
+pass_filenames = false
