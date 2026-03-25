@@ -788,6 +788,30 @@ class TestNullMerge:
             changed_caps = [c["capability"] for c in cmp["changes"]]
             assert "roots" not in changed_caps, "roots was preserved by merge, should not appear as changed"
 
+    def test_listchanged_not_regressed_on_partial_reprobe(self, tmp_output: Path) -> None:
+        """Regression: listChanged must not regress True→None on a partial re-probe.
+
+        Scenario: first full probe sets tools.listChanged=True, second connection
+        observes tools/list (supported=True) but never calls run_full_probe so
+        _list_changed is empty → listChanged=None.  The null-merge must preserve
+        the previous listChanged value.
+        """
+        self._seed_previous(
+            tmp_output,
+            {"tools": {"supported": True, "listChanged": True, "evidence": "full probe"}},
+            client_record={"protocolVersion": "", "title": "X", "url": "", "tools": {"listChanged": True}},
+        )
+        mw = _CapabilityCaptureMW(tmp_output)
+        mw._client_info = {"name": "X"}
+        # Partial re-probe: client uses tools but run_full_probe not called
+        mw._observed["tools"] = ["tools/list"]
+        # _list_changed stays empty → _build_capability_detail sets listChanged=None
+        mw._flush()
+        entry = read_client_entry(tmp_output, "X")
+        assert entry["capabilities"]["tools"]["supported"] is True
+        assert entry["capabilities"]["tools"]["listChanged"] is True, "listChanged regressed from True to None on partial re-probe"
+        assert entry["clientRecord"]["tools"].get("listChanged") is True
+
     def test_merge_preserves_multiple_caps(self, tmp_output: Path) -> None:
         self._seed_previous(
             tmp_output,

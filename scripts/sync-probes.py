@@ -7,6 +7,7 @@ Usage:
 
 from __future__ import annotations
 
+import json
 import shutil
 from pathlib import Path
 
@@ -18,6 +19,13 @@ _LOCAL_DB = Path.home() / "mcp-probes" / "mcp-clients-2026.json"
 def main() -> None:
     if not _LOCAL_DB.exists():
         print(f"No local DB found at {_LOCAL_DB}")
+        return
+
+    try:
+        data = _LOCAL_DB.read_text(encoding="utf-8")
+        json.loads(data)  # validate before copying
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"Invalid local DB: {exc}")
         return
 
     shutil.copy2(_LOCAL_DB, _REPO_DB)

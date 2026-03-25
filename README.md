@@ -347,7 +347,7 @@ complementary strategies:
 Tiers 1 and 2 run automatically on every connection. Tier 3 requires calling
 the `run_full_probe` tool (the server instructions ask the agent to do this).
 
-#### 1. Install mcp-probe in your MCP client
+### 1. Install mcp-probe in your MCP client
 
 The easiest way is via `fastmcp install` (requires a local clone):
 
@@ -368,7 +368,7 @@ uv run fastmcp install mcp-json       src/mcp_client_capabilities/probe_server.p
 
 You may need to restart the client after saving the config.
 
-#### Testing multiple clients
+### Testing multiple clients
 
 No special configuration needed — results are automatically keyed by client
 name in the shared database file (`~/mcp-probes/mcp-clients-2026.json`).
@@ -384,7 +384,7 @@ Each probe upserts its results into the same DB file. Re-probing the same
 client updates its entry and the `comparisonVsPreviousProbe` section shows
 what changed.
 
-#### 2. Run the full probe
+### 2. Run the full probe
 
 On connect, the DB file is updated with Tier 1 + 2 results. To
 complete the scan, ask the agent to **read the `probe://status` resource** and
@@ -402,7 +402,7 @@ sampling, and elicitation.
 > The sampling probe triggers a lightweight LLM call (`max_tokens=10`).
 > The elicitation probe shows a confirmation dialog to the user.
 
-#### 3. Read the results
+### 3. Read the results
 
 Results are stored in the DB file (`~/mcp-probes/mcp-clients-2026.json`) keyed
 by client name. Each entry has four sections:
@@ -481,7 +481,7 @@ by client name. Each entry has four sections:
 | `"has_changes"` | Capabilities changed (see `changes` array) |
 | `"first_probe"` | No previous probe for this client |
 
-#### 4. Contributing results
+### 4. Contributing results
 
 After probing a client, sync your local results into the repo and submit a PR:
 
@@ -493,7 +493,7 @@ git diff         # Review the changes
 Then commit and open a pull request. The GitHub Pages site will regenerate
 automatically on merge.
 
-#### CLI options
+### CLI options
 
 ```bash
 # default DB path (always ~/mcp-probes/mcp-clients-2026.json):

@@ -150,20 +150,26 @@ class _CapabilityCaptureMW(Middleware):
 
         return detail
 
-    def _build_client_record(self) -> dict[str, Any]:
-        """Build an entry matching the ``mcp-clients.json`` schema.
+    def _record_from_capabilities(
+        self,
+        capabilities: dict[str, Any],
+        protocol_version: str,
+        title: str,
+        url: str,
+    ) -> dict[str, Any]:
+        """Build an ``mcp-clients.json``-shaped record from a capabilities dict.
 
         Only includes capabilities confirmed as supported.
         ``listChanged`` is only included when ``True``.
         """
         record: dict[str, Any] = {
-            "protocolVersion": self._protocol_version,
-            "title": self._client_info.get("name", "Unknown"),
-            "url": "",
+            "protocolVersion": protocol_version,
+            "title": title,
+            "url": url,
         }
         for key in self._ALL_CAPS:
-            detail = self._build_capability_detail(key)
-            if detail["supported"] is not True:
+            detail = capabilities.get(key, {})
+            if detail.get("supported") is not True:
                 continue
             val: dict[str, Any] = {}
             if detail.get("listChanged") is True:
@@ -174,6 +180,16 @@ class _CapabilityCaptureMW(Middleware):
             record["experimental"] = self._declared["experimental"]
 
         return record
+
+    def _build_client_record(self) -> dict[str, Any]:
+        """Build an entry matching the ``mcp-clients.json`` schema."""
+        capabilities = {key: self._build_capability_detail(key) for key in self._ALL_CAPS}
+        return self._record_from_capabilities(
+            capabilities,
+            self._protocol_version,
+            self._client_info.get("name", "Unknown"),
+            "",
+        )
 
     def _build_result(self) -> dict[str, Any]:
         """Build the full probe output with capabilities + clientRecord."""
@@ -189,7 +205,12 @@ class _CapabilityCaptureMW(Middleware):
             "clientInfo": self._client_info,
             "protocolVersion": self._protocol_version,
             "capabilities": capabilities,
-            "clientRecord": self._build_client_record(),
+            "clientRecord": self._record_from_capabilities(
+                capabilities,
+                self._protocol_version,
+                self._client_info.get("name", "Unknown"),
+                "",
+            ),
         }
 
     _COMPARABLE_CAPS = ("tools", "resources", "prompts", "roots", "sampling", "elicitation")
@@ -288,29 +309,26 @@ class _CapabilityCaptureMW(Middleware):
             if self._previous_probe and "capabilities" in self._previous_probe:
                 prev_caps = self._previous_probe["capabilities"]
                 for cap, detail in result.get("capabilities", {}).items():
-                    if detail.get("supported") is None and cap in prev_caps and prev_caps[cap].get("supported") is not None:
-                        result["capabilities"][cap] = prev_caps[cap]
+                    if cap not in prev_caps:
+                        continue
+                    prev = prev_caps[cap]
+                    # Preserve entire capability when supported regresses to None
+                    if detail.get("supported") is None and prev.get("supported") is not None:
+                        result["capabilities"][cap] = prev
+                    # Preserve listChanged when only that sub-field regresses to None
+                    elif detail.get("listChanged") is None and prev.get("listChanged") is not None:
+                        result["capabilities"][cap] = {**detail, "listChanged": prev["listChanged"]}
 
             # Rebuild clientRecord from (possibly merged) capabilities
-            merged_record: dict[str, Any] = {
-                "protocolVersion": result.get("protocolVersion", ""),
-                "title": result.get("clientInfo", {}).get("name", "Unknown"),
-                "url": result.get("clientRecord", {}).get("url", ""),
-            }
-            for cap_key in self._ALL_CAPS:
-                cap_detail = result["capabilities"].get(cap_key, {})
-                if cap_detail.get("supported") is not True:
-                    continue
-                val: dict[str, Any] = {}
-                if cap_detail.get("listChanged") is True:
-                    val["listChanged"] = True
-                merged_record[cap_key] = val
-            if "experimental" in self._declared:
-                merged_record["experimental"] = self._declared["experimental"]
-            result["clientRecord"] = merged_record
+            result["clientRecord"] = self._record_from_capabilities(
+                result["capabilities"],
+                result.get("protocolVersion", ""),
+                result.get("clientInfo", {}).get("name", "Unknown"),
+                result.get("clientRecord", {}).get("url", ""),
+            )
 
-            result["comparisonVsDatabase"] = self._compare_vs_database(client_key, merged_record)
-            result["comparisonVsPreviousProbe"] = self._compare_vs_previous(merged_record)
+            result["comparisonVsDatabase"] = self._compare_vs_database(client_key, result["clientRecord"])
+            result["comparisonVsPreviousProbe"] = self._compare_vs_previous(result["clientRecord"])
 
             # Clean up "unknown" entry once we know the real name
             if client_key != "unknown" and "unknown" in db:
